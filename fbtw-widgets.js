@@ -5,9 +5,6 @@
 */
 (function ($) {
     
-    //Get dynamic data using sdftvars object
-    var appID = sdftvars.app_id;
-    
     $(document).ready(function () {
         (function (d, s, id) {
             var js, fjs = d.getElementsByTagName(s)[0];
@@ -15,7 +12,8 @@
                 return;
             js = d.createElement(s);
             js.id = id;
-            js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8&appId=" + appID;
+            js.async = true;
+            js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8&appId=" + sdftvars.app_id;
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));                
     });

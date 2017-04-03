@@ -1,8 +1,8 @@
 <?php
 /*
   Plugin Name: Advanced Facebook Twitter Widget
-  Description: A powerful Facebook and Twitter widgets integration that allows you to display facebook (timeline, events and messages), twitter follow button and twitter timeline for your wordpress website.
-  Version: 1.0
+  Description: A powerful Facebook and Twitter widgets and shortcode integration that allows you to display facebook (likes, timeline, events and messages), twitter follow button and twitter timeline for your wordpress website.
+  Version: 1.2
   Author: Shahaji Deshmukh
   Author URI: https://profiles.wordpress.org/shahaji9
   Plugin URI: https://wordpress.org/plugins/advanced-facebook-twitter-widget
@@ -38,7 +38,7 @@ function sdaftw_frontend_scripts() {
 
 add_action('wp_enqueue_scripts', 'sdaftw_frontend_scripts');
 
-// Place in Option List on Settings > Plugins page 
+// Place in Option List on Appearance >> Widgets 
 function sdaftw_settings_actlinks($links, $file) {
     // Static so we don't call plugin_basename on every plugin row.
     static $my_plugin;
@@ -57,5 +57,24 @@ function sdaftw_settings_actlinks($links, $file) {
 
 add_filter('plugin_action_links', 'sdaftw_settings_actlinks', 10, 2);
 
+/**
+ * Async helper function.
+ *
+ * http://wordpress.stackexchange.com/questions/38319/how-to-add-defer-defer-tag-in-plugin-javascripts/38335#38335
+ *
+ * @since 1.2
+ */
+add_filter( 'script_loader_tag', 'sdaftw_async_loader', 10, 2 );
+function sdaftw_async_loader( $tag, $handle ) {
+
+	if ( 'fbtw-widgets' !== $handle ) {
+		return $tag;
+	}
+
+	return str_replace( ' src', ' async="async" src', $tag );
+}
+
+
 //Include files
 require_once(AFTW_WIDGET_PLUGIN_BASE_URL . '/fbtw-widgets.php');
+require_once(AFTW_WIDGET_PLUGIN_BASE_URL . '/fbtw-widgets-shortcode.php');

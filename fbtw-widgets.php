@@ -23,7 +23,19 @@ class fbPageLike_widget extends WP_Widget {
         $title = apply_filters('widget_title', $instance['title']);
         $appId = $instance['app_id'];
         $facebook_page_url = $instance['facebook_page_url'];
-        $data_tabs = $instance['data_tabs'];
+        
+        $tab_output = array();
+
+		if ( $instance['timeline_tab'] == 1 ) {
+			array_push( $tab_output, 'timeline' );
+		}
+		if ( $instance['events_tab'] == 1 ) {
+			array_push( $tab_output, 'events' );
+		}
+		if ( $instance['messages_tab'] == 1 ) {
+			array_push( $tab_output, 'messages' );
+		}
+        
         $data_small_header = isset($instance['data_small_header']) && $instance['data_small_header'] != '' ? 'true' : 'false';
         $data_hide_cover = isset($instance['data_hide_cover']) && $instance['data_hide_cover'] != '' ? 'true' : 'false';
         $data_show_facepile = isset($instance['data_show_facepile']) && $instance['data_show_facepile'] != '' ? 'true' : 'false';
@@ -45,10 +57,11 @@ class fbPageLike_widget extends WP_Widget {
             }
             <?php echo $custom_css; ?>
         </style>
+        
         <?php
         echo '<center><div class="widget-loader"><img src="' . AFTW_WIDGET_PLUGIN_URL . '/loader.gif" /></div></center>';
         echo '<div id="fbtw-facebook-timeline"><div id="fb-root"></div>';
-        echo '<div class="fb-page" data-tabs="' . $data_tabs . '" data-href="' . $facebook_page_url . '" data-width="' . $width . '" data-height="' . $height . '" data-small-header="' . $data_small_header . '" data-adapt-container-width="' . $data_adapt_container_width . '" data-hide-cover="' . $data_hide_cover . '" data-show-facepile="' . $data_show_facepile . '" style="' . $custom_css . '"></div></div>';
+        echo '<div class="fb-page" data-tabs="' . implode( ', ', $tab_output ) . '" data-href="' . $facebook_page_url . '" data-width="' . $width . '" data-height="' . $height . '" data-small-header="' . $data_small_header . '" data-adapt-container-width="' . $data_adapt_container_width . '" data-hide-cover="' . $data_hide_cover . '" data-show-facepile="' . $data_show_facepile . '" style="' . $custom_css . '"></div></div>';
         echo $after_widget;
     }
 
@@ -56,15 +69,20 @@ class fbPageLike_widget extends WP_Widget {
     function update($new_instance, $old_instance) {
 
         $instance = $old_instance;
-        $instance = array('data_tabs' => 'timeline', 'data_small_header' => 'false', 'data_adapt_container_width' => 'false', 'data_hide_cover' => 'false', 'data_show_facepile' => 'false');
+			
+        $instance = array('timeline_tab' => '1', 'events_tab' => '0', 'messages_tab' => '0', 'data_small_header' => 'false', 'data_adapt_container_width' => 'false', 'data_hide_cover' => 'false', 'data_show_facepile' => 'false');
+        
         foreach ($instance as $field => $val) {
             if (isset($new_instance[$field]))
                 $instance[$field] = 'true';
         }
+        
         $instance['title'] = strip_tags($new_instance['title']);
         $instance['app_id'] = strip_tags($new_instance['app_id']);
         $instance['facebook_page_url'] = strip_tags($new_instance['facebook_page_url']);
-        $instance['data_tabs'] = strip_tags($new_instance['data_tabs']);
+        $instance['timeline_tab'] = strip_tags($new_instance['timeline_tab']);
+        $instance['events_tab'] = strip_tags($new_instance['events_tab']);
+        $instance['messages_tab'] = strip_tags($new_instance['messages_tab']);
         $instance['data_small_header'] = strip_tags($new_instance['data_small_header']);
         $instance['data_hide_cover'] = strip_tags($new_instance['data_hide_cover']);
         $instance['data_show_facepile'] = strip_tags($new_instance['data_show_facepile']);
@@ -82,18 +100,25 @@ class fbPageLike_widget extends WP_Widget {
         /**
          * Set Default Value for widget form
          */
-        $defaults = array('title' => 'Facebook Page Like', 'app_id' => '', 'facebook_page_url' => 'http://facebook.com/facebook', 'data_tabs' => 'timeline', 'width' => '250', 'height' => '350', 'data_small_header' => 'false', 'data_adapt_container_width' => 'false', 'data_hide_cover' => 'false', 'data_show_facepile' => 'on', 'custom_css' => '');
+        $defaults = array('title' => 'Facebook Page Like', 'app_id' => '', 'facebook_page_url' => 'http://facebook.com/facebook', 'timeline_tab' => '1', 'events_tab' => '0', 'messages_tab' => '0', 'width' => '250', 'height' => '350', 'data_small_header' => 'false', 'data_adapt_container_width' => 'false', 'data_hide_cover' => 'false', 'data_show_facepile' => 'on', 'custom_css' => '');
+        
         $instance = wp_parse_args((array) $instance, $defaults);
         $title = esc_attr($instance['title']);
         $appId = isset($instance['app_id']) ? esc_attr($instance['app_id']) : "";
         $facebook_page_url = isset($instance['facebook_page_url']) ? esc_attr($instance['facebook_page_url']) : "http://www.facebook.com/facebook";
-        $data_tabs = isset($instance['data_tabs']) ? esc_attr($instance['data_tabs']) : "";
+        
+        $timeline_tab = array( 'true' => 'Yes', 'false' => 'No' );
+		$events_tab = array( 'true' => 'Yes', 'false' => 'No' );
+		$messages_tab = array( 'true' => 'Yes', 'false' => 'No' );
+        
         $data_hide_cover = esc_attr($instance['data_hide_cover']);
         $data_show_facepile = esc_attr($instance['data_show_facepile']);
         $data_adapt_container_width = esc_attr($instance['data_adapt_container_width']);
         $width = esc_attr($instance['width']);
-        $height = esc_attr($instance['height']);
+        $height = esc_attr($instance['height']);        
         $custom_css = isset($instance['custom_css']) ? esc_attr($instance['custom_css']) : "";
+        
+        $booleans = array( 1 => 'Yes', 0 => 'No' );
         ?>
         <p>
             <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'facebook-pagelike-feeds'); ?></label>
@@ -102,25 +127,41 @@ class fbPageLike_widget extends WP_Widget {
         <p>
             <label for="<?php echo $this->get_field_id('app_id'); ?>"><?php _e('Facebook Application Id:', 'facebook-pagelike-feeds'); ?></label>
             <input class="widefat" id="<?php echo $this->get_field_id('app_id'); ?>" name="<?php echo $this->get_field_name('app_id'); ?>" type="text" value="<?php echo $appId ?>" />
+            <small>
+				<?php _e('Configure a'); ?> <a href="https://developers.facebook.com/apps/" target="_blank"><?php _e('Facebook App'); ?></a> <?php _e('to enable the Share functionality.'); ?>
+            </small>
         </p>
         <p>
             <label for="<?php echo $this->get_field_id('facebook_page_url'); ?>"><?php _e('Facebook Page Url:', 'facebook-pagelike-feeds'); ?></label>
             <input class="widefat" id="<?php echo $this->get_field_id('facebook_page_url'); ?>" name="<?php echo $this->get_field_name('facebook_page_url'); ?>" type="text" value="<?php echo $facebook_page_url; ?>" />
             <small>
-                <?php _e('Works with only'); ?>
-                <a href="https://developers.facebook.com/docs/plugins/page-plugin" target="_blank">
-                    <?php _e('Valid Facebook Pages'); ?>
-                </a>
+                <?php _e('Works with only'); ?> <a href="https://developers.facebook.com/docs/plugins/page-plugin" target="_blank"> <?php _e('Valid Facebook Pages'); ?></a>
             </small>
-        </p>
+        </p>        
         <p>
-            <label for="<?php echo $this->get_field_id('data_tabs'); ?>"><?php _e('Tabs:', 'facebook-pagelike-feeds'); ?></label>
-            <select name="<?php echo $this->get_field_name('data_tabs'); ?>" id="<?php echo $this->get_field_id('data_tabs'); ?>">
-                <option value="timeline" <?php echo selected($instance['data_tabs'], 'timeline'); ?>>Timeline</option>
-                <option value="events" <?php echo selected($instance['data_tabs'], 'events'); ?>>Events</option>
-                <option value="messages" <?php echo selected($instance['data_tabs'], 'messages'); ?>>Messages</option>
-            </select>
-        </p>
+			<label for="<?php echo $this->get_field_id( 'timeline_tab' ); ?>"><?php _e( 'Show Timeline Tab?', 'facebook-pagelike-feeds' ); ?></label>
+			<select class="widefat" id="<?php echo $this->get_field_id( 'timeline_tab' ); ?>" name="<?php echo $this->get_field_name( 'timeline_tab' ); ?>">
+				<?php foreach ( $booleans as $key => $val ): ?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $instance['timeline_tab'], $key ); ?>><?php echo esc_html( $val ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'events_tab' ); ?>"><?php _e( 'Show Events Tab?', 'facebook-pagelike-feeds' ); ?></label>
+			<select class="widefat" id="<?php echo $this->get_field_id( 'events_tab' ); ?>" name="<?php echo $this->get_field_name( 'events_tab' ); ?>">
+				<?php foreach ( $booleans as $key => $val ): ?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $instance['events_tab'], $key ); ?>><?php echo esc_html( $val ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'messages_tab' ); ?>"><?php _e( 'Show Messages Tab?', 'facebook-pagelike-feeds' ); ?></label>
+			<select class="widefat" id="<?php echo $this->get_field_id( 'messages_tab' ); ?>" name="<?php echo $this->get_field_name( 'messages_tab' ); ?>">
+				<?php foreach ( $booleans as $key => $val ): ?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $instance['messages_tab'], $key ); ?>><?php echo esc_html( $val ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</p>
         <p>
             <input class="checkbox" type="checkbox" <?php checked($instance['data_small_header'], "on") ?> id="<?php echo $this->get_field_id('data_small_header'); ?>" name="<?php echo $this->get_field_name('data_small_header'); ?>" />
             <label for="<?php echo $this->get_field_id('data_small_header'); ?>"><?php _e('Use Small Header', 'facebook-pagelike-feeds'); ?></label>
@@ -138,11 +179,11 @@ class fbPageLike_widget extends WP_Widget {
             <label for="<?php echo $this->get_field_id('data_adapt_container_width'); ?>"><?php _e('Adapt To Plugin Container Width', 'facebook-pagelike-feeds'); ?></label>
         </p>
         <p class="width_section <?php echo $instance['data_adapt_container_width'] == 'on' ? 'hide-width-section' : ''; ?>">
-            <label for="<?php echo $this->get_field_id('width'); ?>"><?php _e('Timeline Width:', 'facebook-pagelike-feeds'); ?></label>
+            <label for="<?php echo $this->get_field_id('width'); ?>"><?php _e('Width:', 'facebook-pagelike-feeds'); ?></label>
             <input size="5" id="<?php echo $this->get_field_id('width'); ?>" name="<?php echo $this->get_field_name('width'); ?>" type="text" value="<?php echo $width; ?>" />
         </p>
         <p>
-            <label for="<?php echo $this->get_field_id('height'); ?>"><?php _e('Timeline Height:', 'facebook-pagelike-feeds'); ?></label>
+            <label for="<?php echo $this->get_field_id('height'); ?>"><?php _e('Height:', 'facebook-pagelike-feeds'); ?></label>
             <input size="5" id="<?php echo $this->get_field_id('height'); ?>" name="<?php echo $this->get_field_name('height'); ?>" type="text" value="<?php echo $height; ?>" />
         </p>
         <p>
